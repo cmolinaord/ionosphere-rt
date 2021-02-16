@@ -21,7 +21,7 @@ fprintf(fid, '%10.10f\n', str2double(parameters));
 fclose(fid);
 
 % Run ionort.exe program in the 'source' folder
-oldFolder = cd('source');   
+oldFolder = cd('source');
 [status,result] = system( ['ionort_', ionort_model] );
 cd(oldFolder);
 
@@ -36,52 +36,52 @@ split_coordinates = find( coordinates(:,1) == 0 & coordinates(:,2) == 0 & coordi
 
 % CYCLE FOR EVERY RAY FOUND
 for i = 0 : length( split_coordinates ) - 1
-    
+
     if ( length( split_coordinates ) == 1 )
         % the radius is only one, there is no need to divide it
         coordinate = coordinates;
     else
-        
+
         if ( i == 0 )
             start_coordinate = 1;
         else
             start_coordinate = split_coordinates(i)+1;
         end
-        
+
         if ( length( split_coordinates ) == i )
             end_coordinate = length( coordinates );
         else
             end_coordinate = split_coordinates(i+1);
         end
-        
+
         coordinate = coordinates( start_coordinate : end_coordinate, : );
-        
+
     end
-    
+
     % Special radius coordinates
     %* NOTA: IONO IN NON DOVREBBE ESSERE - 1 *%
     ray_ionoin = find(coordinate(:,1) == 111.1 & coordinate(:,3) == 1) - 1; % RAY IN THE IONOSPHERE
     ray_apogee = find(coordinate(:,1) == 111.1 & coordinate(:,3) == 2) - 1; % APOGEE
     ray_ionoout = find(coordinate(:,1) == 111.1 & coordinate(:,3) == 3) - 1; % RAY OUT THE IONOSPHERE
-    
+
     % Special coordinates of critical cases
     case_penetrate = find(coordinate(:,1) == 222.2 & coordinate(:,3) == 0); % RAY PENETRATE
     case_closest = find(coordinate(:,1) == 222.2 & coordinate(:,3) == 1); % CLOSEST APPROACH : MIN. DIST.
     case_reflection = find(coordinate(:,1) == 222.2 & coordinate(:,3) == 2); % GROUND REFLECTION
     case_integration = find(coordinate(:,1) == 222.2 & coordinate(:,3) == 3); % INTEGRATION FAILURE
-    
+
     % Special coordinates of critical cases
     result_groupdelay = coordinate( find(coordinate(:,1) == 333.3 & coordinate(:,3) == 1), 2 ); % GROUP DELAY
     result_grouppath = coordinate( find(coordinate(:,1) == 333.3 & coordinate(:,3) == 2), 2 ); % GROUP PATH
     result_plasmafreq = coordinate( find(coordinate(:,1) == 333.3 & coordinate(:,3) == 3), 2 ); % TRANSMITTER IN EVANESCENT REGION: CRITICAL PLASMAFREQUENCY
 
     % Deleting rows with particular values
-    OPTIMIZABLE%: I already know which lines to remove
+    % OPTIMIZABLE: I already know which lines to remove
     coordinate( find( coordinate(:,1) == 0 & coordinate(:,2) == 0 & coordinate(:,3) == 0 ), :) = [];
     coordinate( find( coordinate(:,1) == 111.1 ), :) = [];
     coordinate( find( coordinate(:,1) == 222.2 ), :) = [];
     coordinate( find( coordinate(:,1) == 333.3 ), :) = [];
-    
+
     % correction due to shifting of coordinates afterwards
     % the elimination of special points.
     if( ~isempty( ray_ionoin ) )
@@ -91,17 +91,17 @@ for i = 0 : length( split_coordinates ) - 1
     if( ~isempty( ray_apogee ) )
         if( ~isempty( ray_ionoout ) ) ray_ionoout = ray_ionoout - 1; end
     end
-    
+
     % SIGNIFICANT CASE critical plasma frequency: the beam does not start
     if( ~isempty( result_plasmafreq ) )
-        
+
         doPlot = false;
-        
+
         h = findobj('Tag', 'result_plasmafreq');
         set(h, 'String', result_plasmafreq );
-        
+
     else
-        
+
         doPlot = true;
 
         % Reading columns
@@ -135,7 +135,7 @@ for i = 0 : length( split_coordinates ) - 1
             h = findobj('Tag', 'result_grouppath');
             set(h, 'String', result_grouppath );
         end
-        
+
     end
 
     % parameters and results for the string
@@ -161,7 +161,7 @@ for i = 0 : length( split_coordinates ) - 1
                'Receiver    = ', receiver, ' km \n\n', ...
                'RESULTS \n', ...
                '----------------------- \n'];
-    
+
     if( ~isempty( result_plasmafreq ) )
         stringa = [stringa 'Critical plasma frequency  = ', num2str( result_plasmafreq ), ' MHz \n'];
     else
@@ -169,8 +169,8 @@ for i = 0 : length( split_coordinates ) - 1
                'Latitude    = ', num2str( lat( length(lat) ) ), ' N \n', ...
                'Longitude   = ', num2str( lon( length(lon) ) ), ' E \n'];
     end
-    
-    if( ~isempty( ray_apogee ) )      
+
+    if( ~isempty( ray_apogee ) )
         stringa = [stringa, 'Apogee      = ', num2str( ray_apogee ), ' km \n'];
     end
     if( ~isempty( result_groupdelay ) )
@@ -191,20 +191,20 @@ for i = 0 : length( split_coordinates ) - 1
     if( ~isempty( case_integration ) )
         stringa = [stringa '\nINTEGRATION FAILURE !!!'];
     end
-    
+
     % Name of the file to be saved in the /results folder
     filename = ['results\LAT ', lat_start, ' - LON ', lon_start, ' - FR ', frequency, ' - EL ', elevation, ' - AZ ', azimuth, ' - Tx ', transmitter, ' - Rx ', receiver, ' - ', ionort_model, ray_extra];
-           
+
     % Saving result string
     dlmwrite( [ filename, '.txt' ], ...
               sprintf(stringa), 'delimiter', '', 'newline', 'pc');
-    
+
     %% Saving simple output variables
     % eval(['save ' [filename,'.num'] ' final_lat final_long apogee group_delay group_path -ascii']);
 
 
     if( doPlot )
-        
+
         %% 3D visualization
 
         % Focus on the figure representing the Earth
@@ -297,7 +297,7 @@ for i = 0 : length( split_coordinates ) - 1
                   'MarkerFaceColor', [1 1 1], ...
                   'MarkerSize', 5);
 
-            OUTPUT MARKER
+            % OUTPUT MARKER
 
         end
 
@@ -392,7 +392,7 @@ for i = 0 : length( split_coordinates ) - 1
         end
 
         if( isempty( case_closest ) && isempty( case_reflection ) && isempty( case_integration ) )
-            
+
             if( isempty( case_penetrate ) )
                 % Receiver
                 mark_receiver = plot( ray( length(ray) ), altitude( length(altitude) ), ...
@@ -410,7 +410,7 @@ for i = 0 : length( split_coordinates ) - 1
                 legenda_punti = [ legenda_punti, mark_penetration ];
                 legenda_label = [ legenda_label, {'Penetration'} ];
             end
-            
+
         else
             if( ~isempty( case_closest ) )
                 mark_closest = plot( ray( length(ray) ), altitude( length(altitude) ), ...
@@ -441,5 +441,5 @@ for i = 0 : length( split_coordinates ) - 1
         legend( legenda_punti, legenda_label );
 
     end
-    
+
 end
