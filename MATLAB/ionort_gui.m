@@ -497,6 +497,17 @@ function reset_Callback(hObject, eventdata, handles)
 h = findobj('Tag','az');
 cla(h,'reset');
 
+h = findobj('Tag','earth');
+cla(h,'reset');
+
+set(gcf,'CurrentAxes', h);
+earth;
+
+view([90 0]);
+
+% Controlli 3D
+cameratoolbar('Show');
+
 % Update handles structure
 guidata(handles.figure1, handles);
 
@@ -630,8 +641,8 @@ h = findobj('Tag','az');
 set(gcf,'CurrentAxes',h);
 
 % Etichette assi
-xlabel('Ground Range [km]','fontweight','b');
-ylabel('Altitude [km]','fontweight','b');
+xlabel('Ground Range [km]');
+ylabel('Altitude [km]');
 
 
 % --- Executes on button press in step_no.
